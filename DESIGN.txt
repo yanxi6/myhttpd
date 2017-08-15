@@ -1,0 +1,40 @@
+Project 1 design document 
+a.Team FGIS:
+Enze Zhang   50168477  enzezhan@buffalo.edu 
+Yan xi   50168823  yanxi@buffalo.edu 
+b. We use linked list queue and priority queue for queuing and scheduling. struct node is the node in the linked list.
+typedef struct node{
+    void* element;
+    struct node* next;
+}mynode;
+Two pointers to node store the front and tail element in the queue.
+typedef struct queue{
+    struct node* front;
+    struct node* tail;
+}*queue_t;
+For the ready queue, we maintain two queues, for the FCFS scheduling, we use a normal queue, and insert all the request from client to the queue in the order of arriving time. For the SJF scheduling, we use a priority queue, insert the request into the queue according to the requested file size. 
+We use thread pool to implement multithreading and synchronization. Size for the size of job queue. Mutex is the mutational exclution of job queue. queue_ready is the condition variable for informing the threads that one job was pushed to the job queue. wait_time is the waiting time after server started.
+typedef struct thread_pool{
+    unsigned int size;
+    queue_t buffers;
+    // pthread_t* consumers;
+    pthread_t* consumers;
+    pthread_mutex_t mutex;
+    pthread_cond_t queue_ready;
+    int wait_time;
+    int flag;
+}*thread_pool_t;
+
+c.The contest switch 
+d.To avoid race condition, we need to avoid threads accessing the job queue at the same time. In the thread pool, the mutex and conditional variable are implemented to protect the job queue. When the scheduling thread throws a job in the thread pool, the thread_pool_add_work() will lock the queue, then enter the critical region. 
+When the threads in the thread pool want to pull out one job in the job queue, the thread_pool lock the queue and find if the queue is empty. If the queue is empty, the thread will wait for condition variable. The condition variable will signal threads when the job pushed in the queue. Then, one thread pull out a job. In conclusion, mutex avoid several thread pull out the same job. Condition variable avoid thread try to pull out a job when the queue is empty. 
+e.We designed a N+1 thread web server, where one listening thread is responsible for listening to the incoming HTTP requests and inserting them in a ready queue, according to the schedule policy. For FCFS, the ready queue is just a normal queue, where all requests in the ready queue are in the order according to their arrive times; for SJF, the ready queue is a priority queue with requesting file size as associated keys, and all requests in the ready queue are in the order according to their requesting file size. (For the HEAD request, the file size is considered as 0 in the queue.) The advantage of our server is that well designed, we designed a thread pool structure to include all the thread-related functions. And for web server part, we implemented request listening and request processing functions.
+f.Citation:
+1.https://www.youtube.com/watch?v=Q1bHO4VbUck
+2.https://www.tutorialspoint.com/cprogramming/c_file_io.htm
+3.https://13abyknight.wordpress.com/2013/03/20/a-simple-thread-pool-c-implementation-on-linux/
+4.https://github.com/adilansari/myhttpd
+5.stack overflow
+6.http://beej.us/guide/bgnet/output/html/multipage/recvman.html
+7.http://blog.csdn.net/kxcfzyk/article/details/31719687
+

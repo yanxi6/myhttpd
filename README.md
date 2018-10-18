@@ -7,7 +7,7 @@ make
 
 example of running command: myhttpd -p 8080 -h localhost
 
-OPTIONS:
+### OPTIONS:
 −d: Enter debugging mode. That is, do not daemonize, only accept one connection at a time and enable logging to stdout. Without this option, the web server should run as a daemon process in the background.
 −h: Print a usage summary with all options and exit.
 −l file: Log all requests to the given file. See LOGGING for details.
